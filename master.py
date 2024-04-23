@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn import datasets
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, adjusted_rand_score
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, adjusted_rand_score, silhouette_score, purity_score, homogeneity_score
 
 # Charger le jeu de données Iris depuis scikit-learn
 iris = datasets.load_iris()
@@ -15,6 +14,16 @@ true_labels = iris.target  # Vraies étiquettes des classes
 
 # Aperçu des données
 print(data.head())
+print(data.describe())
+
+# Analyse exploratoire des données (EDA)
+# Visualisation de la distribution de chaque caractéristique
+data.hist(figsize=(12, 8))
+plt.show()
+
+# Diagrammes de dispersion pour visualiser les relations entre les caractéristiques
+pd.plotting.scatter_matrix(data, figsize=(15, 12), alpha=0.8)
+plt.show()
 
 # Sélectionner les caractéristiques pour le clustering
 features = data[['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']]
@@ -23,8 +32,8 @@ features = data[['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', '
 scaler = StandardScaler()
 scaled_features = scaler.fit_transform(features)
 
-# Choisir le nombre de clusters
-num_clusters = 3  # Choix du nombre de clusters (correspondant aux trois espèces)
+# Choisir le nombre de clusters (essayez avec différentes valeurs de num_clusters)
+num_clusters = 3  # Vous pouvez également expérimenter avec d'autres valeurs, comme 2, 4, 5, etc.
 
 # Initialiser et entraîner l'algorithme K-Means
 kmeans = KMeans(n_clusters=num_clusters, random_state=42)
@@ -33,7 +42,7 @@ kmeans.fit(scaled_features)
 # Ajouter les labels de cluster aux données
 data['Cluster'] = kmeans.labels_
 
-# Visualiser les clusters
+# Visualiser les clusters en 2D
 plt.figure(figsize=(10, 8))
 plt.scatter(data['sepal length (cm)'], data['petal length (cm)'], c=data['Cluster'], cmap='viridis')
 plt.xlabel('Sepal Length (cm)')
@@ -73,6 +82,12 @@ print(f"Indice de Rand Ajusté: {ari:.2f}")
 silhouette = silhouette_score(scaled_features, data['Cluster'])
 print(f"Score de silhouette: {silhouette:.2f}")
 
+# Calcul de la purity et de l'homogeneity
+purity = purity_score(true_labels, data['Cluster'])
+homogeneity = homogeneity_score(true_labels, data['Cluster'])
+print(f"Purity: {purity:.2f}")
+print(f"Homogeneity: {homogeneity:.2f}")
+
 # Classification report
 report = classification_report(true_labels, data['Cluster'])
 print("Rapport de classification :")
@@ -110,4 +125,4 @@ for cluster in np.unique(data['Cluster']):
 print("Les résultats montrent que l'algorithme K-Means peut trouver des clusters significatifs dans le jeu de données Iris.")
 print("Toutefois, certaines classes peuvent être confondues avec d'autres, ce qui explique la matrice de confusion et l'Indice de Rand Ajusté.")
 print("Le score de silhouette indique que les clusters sont relativement bien séparés et denses.")
-
+print("La purity et l'homogeneity fournissent des mesures supplémentaires de la qualité du clustering.")
